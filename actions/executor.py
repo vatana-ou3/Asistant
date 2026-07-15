@@ -32,6 +32,7 @@ class ActionExecutor:
             "keyboard_shortcut": self.keyboard.shortcut,
             "press_key": self.keyboard.press_key,
             "scroll": self.mouse.scroll,
+            "stop_scroll": self.mouse.stop_scroll,
             "mouse_click": self.mouse.click,
             "mouse_double_click": self.mouse.double_click,
             "set_volume": self.audio.set_volume,

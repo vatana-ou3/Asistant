@@ -1,6 +1,49 @@
 from __future__ import annotations
 
+import threading
+
 from assistant.models import ActionResult, Intent
+
+
+class ContinuousScroller:
+    def __init__(self, interval_seconds: float = 0.12) -> None:
+        self.interval_seconds = interval_seconds
+        self._stop_event = threading.Event()
+        self._thread: threading.Thread | None = None
+        self._lock = threading.Lock()
+
+    def start(self, direction: str, pyautogui_module) -> None:
+        self.stop()
+        with self._lock:
+            self._stop_event = threading.Event()
+            self._thread = threading.Thread(
+                target=self._run,
+                args=(direction, pyautogui_module, self._stop_event),
+                daemon=True,
+                name="ahmark-continuous-scroll",
+            )
+            self._thread.start()
+
+    def stop(self) -> bool:
+        with self._lock:
+            thread = self._thread
+            if thread is None or not thread.is_alive():
+                self._thread = None
+                return False
+            self._stop_event.set()
+        thread.join(timeout=1)
+        with self._lock:
+            self._thread = None
+        return True
+
+    def _run(self, direction: str, pyautogui_module, stop_event: threading.Event) -> None:
+        amount = -1 if direction == "down" else 1
+        while not stop_event.is_set():
+            pyautogui_module.scroll(amount)
+            stop_event.wait(self.interval_seconds)
+
+
+_SCROLLER = ContinuousScroller()
 
 
 class MouseActions:
@@ -16,11 +59,17 @@ class MouseActions:
         try:
             import pyautogui
 
-            key = "pagedown" if direction == "down" else "pageup"
-            pyautogui.press(key)
+            _SCROLLER.start(direction, pyautogui)
         except Exception as exc:
             return ActionResult(False, f"Scroll failed: {exc}")
-        return ActionResult(True, f"Scrolled {direction}.")
+        return ActionResult(True, f"Scrolling {direction}.")
+
+    def stop_scroll(self, intent: Intent) -> ActionResult:
+        if self.dry_run:
+            return ActionResult(True, "Would stop scrolling.")
+        if _SCROLLER.stop():
+            return ActionResult(True, "Stopped scrolling.")
+        return ActionResult(True, "Scrolling is already stopped.")
 
     def click(self, intent: Intent) -> ActionResult:
         button = intent.target or "left"

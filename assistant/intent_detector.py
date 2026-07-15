@@ -62,6 +62,8 @@ class IntentDetector:
             return Intent(action="scroll", target="down", parameters={"amount": -1}, raw_text=raw_text)
         if command in {"scroll up", "scrolling up", "go up", "page up"}:
             return Intent(action="scroll", target="up", parameters={"amount": 1}, raw_text=raw_text)
+        if command in {"stop", "stop scroll", "stop scrolling"}:
+            return Intent(action="stop_scroll", raw_text=raw_text)
         if command in {"click", "left click"}:
             return Intent(action="mouse_click", target="left", raw_text=raw_text)
         if command in {"double click", "double-click"}:

@@ -142,10 +142,16 @@ def handle_command(
 
 
 def is_desktop_command(command_text: str) -> bool:
+    return detect_command_action(command_text) is not None
+
+
+def detect_command_action(command_text: str) -> str | None:
     config = load_config()
     command_config = {**config.commands, "applications": config.applications}
     intent = IntentDetector(command_config).detect(command_text)
-    return CommandValidator().validate(intent).is_valid
+    if CommandValidator().validate(intent).is_valid:
+        return intent.action
+    return None
 
 
 def interactive_loop(dry_run: bool = False, plain: bool = False) -> int:
@@ -410,6 +416,7 @@ def wake_word_loop(
             _play_cue(880)
             print("Activated. Speak after the tone.")
             active_until = time.monotonic() + config.settings.follow_up_seconds
+            scrolling_active = False
 
             while time.monotonic() < active_until:
                 command_text, error = capture_voice_command(
@@ -426,28 +433,42 @@ def wake_word_loop(
 
                 normalized_command = normalize_command(command_text)
                 if normalized_command in exit_phrases:
+                    if scrolling_active:
+                        handle_command("stop scrolling", dry_run=dry_run)
                     response = "Shutting down. Goodbye."
                     print(response)
                     speak_response(speaker, response)
                     return 0
 
                 if normalized_command in stop_phrases:
+                    if scrolling_active:
+                        handle_command("stop scrolling", dry_run=dry_run)
                     response = "Going back to standby."
                     print(response)
                     speak_response(speaker, response)
                     break
 
+                command_action = detect_command_action(command_text)
                 response = handle_command(command_text, dry_run=dry_run, conversation=conversation)
                 print(response)
                 speak_response(speaker, response)
-                if is_desktop_command(command_text):
+                if command_action == "scroll":
+                    scrolling_active = True
+                    follow_up_prompt = "Scrolling slowly. Say stop when you want me to stop."
+                elif command_action == "stop_scroll":
+                    scrolling_active = False
+                    follow_up_prompt = "Already done. What do you want next?"
+                elif command_action is not None:
                     follow_up_prompt = "Already done. What do you want next?"
                 else:
                     follow_up_prompt = "What do you want next?"
                 print(follow_up_prompt)
                 speak_response(speaker, follow_up_prompt)
                 _play_cue(740)
-                active_until = time.monotonic() + config.settings.follow_up_seconds
+                if scrolling_active:
+                    active_until = float("inf")
+                else:
+                    active_until = time.monotonic() + config.settings.follow_up_seconds
 
             _play_cue(520)
     except KeyboardInterrupt:

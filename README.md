@@ -66,6 +66,8 @@ Say or type `screenshot`, `take a screenshot`, or `open snipping tool` to launch
 
 Say or type `full screen` or `maximize window` to maximize the active app. Use `small screen` or `restore window` to return it to a normal resizable window.
 
+In wake-word mode, `scroll down` and `scroll up` start slow continuous scrolling. Follow-up listening remains active until you say `stop` or `stop scrolling`.
+
 Run `ahmark` without additional text to open the interactive typed conversation.
 
 The typed interface includes a styled local-assistant header, clear conversation turns, loading indicators, automatic terminal wrapping, and Markdown/code rendering. Use `python app.py --plain` when unstyled output is preferable for scripting.

@@ -80,6 +80,11 @@ def test_detect_natural_scrolling_variant() -> None:
     assert intent.target == "down"
 
 
+def test_detect_stop_scrolling() -> None:
+    assert detector().detect("stop").action == "stop_scroll"
+    assert detector().detect("stop scrolling").action == "stop_scroll"
+
+
 def test_detect_maximize_and_restore_window() -> None:
     assert detector().detect("full screen").action == "maximize_window"
     assert detector().detect("small screen").action == "restore_window"

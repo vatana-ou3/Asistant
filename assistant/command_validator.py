@@ -11,6 +11,7 @@ class CommandValidator:
         "keyboard_shortcut",
         "press_key",
         "scroll",
+        "stop_scroll",
         "mouse_click",
         "mouse_double_click",
         "set_volume",

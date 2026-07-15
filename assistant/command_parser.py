@@ -17,6 +17,7 @@ def normalize_command(text: str) -> str:
     command = text.strip().lower()
     command = re.sub(r"[^\w\s%-]", " ", command)
     command = re.sub(r"\s+", " ", command).strip()
+    command = re.sub(r"^(open|launch|start|run)(?=[a-z])", r"\1 ", command)
 
     changed = True
     while changed:

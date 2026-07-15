@@ -7,3 +7,7 @@ def test_normalize_removes_polite_prefixes() -> None:
 
 def test_normalize_removes_wake_word() -> None:
     assert normalize_command("Hey Nova, paste") == "paste"
+
+
+def test_normalize_repairs_joined_open_command() -> None:
+    assert normalize_command("OpenYouTube") == "open youtube"

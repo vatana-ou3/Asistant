@@ -32,14 +32,25 @@ Use `--dry-run` to test command parsing and validation without controlling the d
 .\.venv\Scripts\python app.py --command "set volume to 80 percent" --dry-run
 ```
 
+Use push-to-talk voice mode:
+
+```powershell
+.\.venv\Scripts\python app.py --voice
+```
+
+Press Enter, speak during the recording window, and wait for Nova to run the command. To record only one command, use `--voice-once`. The default recording window is five seconds; change it with `--record-seconds 8`.
+
+Faster-Whisper downloads the selected model the first time it is used. Once the model is cached, transcription runs locally without an internet connection.
+
 ## Current Scope
 
 - Rule-based command understanding.
 - Application and website launching.
 - Browser search URL creation.
 - Keyboard shortcuts, scrolling, click commands.
-- Volume and brightness actions when optional Windows packages are installed.
+- Volume and brightness actions, with media-key volume fallback when exact control is unavailable.
+- Push-to-talk voice commands using local Faster-Whisper transcription.
 - Safety validation for dangerous or invalid actions.
 - Logging to `logs/assistant.log`.
 
-Voice input, wake word detection, and local LLM intent detection are planned for later phases. The `audio/` modules are placeholders that keep the architecture ready without forcing heavy model setup on day one.
+Wake word detection and local LLM intent detection are planned for later phases.

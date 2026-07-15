@@ -1,6 +1,22 @@
 from __future__ import annotations
 
+from audio.recorder import AudioRecording
+
 
 class SpeechDetector:
-    def contains_speech(self, audio: bytes) -> bool:
-        raise NotImplementedError("Voice activity detection will be added in Phase 2.")
+    def __init__(self, minimum_rms: float = 0.0001) -> None:
+        self.minimum_rms = minimum_rms
+
+    def contains_speech(self, audio: AudioRecording) -> bool:
+        return self.input_level(audio) >= self.minimum_rms
+
+    def input_level(self, audio: AudioRecording) -> float:
+        try:
+            import numpy as np
+        except ModuleNotFoundError as exc:
+            raise RuntimeError("Voice mode needs the 'numpy' package. Run: pip install -r requirements.txt") from exc
+
+        samples = np.asarray(audio.samples, dtype=np.float32)
+        if samples.size == 0:
+            return 0.0
+        return float(np.sqrt(np.mean(np.square(samples))))

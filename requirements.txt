@@ -1,0 +1,15 @@
+pyautogui>=0.9.54
+keyboard>=0.13.5
+psutil>=5.9.8
+pygetwindow>=0.0.9
+pycaw>=20240210
+screen-brightness-control>=0.24.2
+pyttsx3>=2.90
+python-dotenv>=1.0.1
+pydantic>=2.7.0
+pytest>=8.2.0
+
+# Phase 2 voice input dependencies.
+faster-whisper>=1.0.0
+sounddevice>=0.4.6
+numpy>=1.26.0

@@ -1,0 +1,7 @@
+{
+  "assistant_name": "Nova",
+  "wake_word": "hey nova",
+  "default_browser": null,
+  "speech_enabled": false,
+  "log_file": "logs/assistant.log"
+}

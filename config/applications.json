@@ -1,0 +1,16 @@
+{
+  "chrome": "chrome",
+  "google chrome": "chrome",
+  "edge": "msedge",
+  "microsoft edge": "msedge",
+  "telegram": "telegram",
+  "vscode": "code",
+  "visual studio code": "code",
+  "notepad": "notepad",
+  "calculator": "calc",
+  "file explorer": "explorer",
+  "explorer": "explorer",
+  "spotify": "spotify",
+  "command prompt": "cmd",
+  "powershell": "powershell"
+}

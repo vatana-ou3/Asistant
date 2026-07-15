@@ -36,7 +36,8 @@ class Transcriber:
                 hallucination_silence_threshold=1.0,
                 hotwords=(
                     "Open Chrome YouTube Telegram Microsoft Teams Explorer folder VS Code Google screenshot Snipping Tool "
-                    "volume brightness copy paste Ah Mark"
+                    "volume brightness copy paste scroll up scroll down page up page down "
+                    "full screen maximize small screen restore Ah Mark"
                 ),
             )
             return " ".join(segment.text.strip() for segment in segments).strip()

@@ -19,6 +19,8 @@ class CommandValidator:
         "set_brightness",
         "adjust_brightness",
         "lock_computer",
+        "maximize_window",
+        "restore_window",
     }
 
     def validate(self, intent: Intent) -> ValidationResult:

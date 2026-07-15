@@ -9,17 +9,18 @@ class MouseActions:
 
     def scroll(self, intent: Intent) -> ActionResult:
         amount = intent.parameters.get("amount", 0)
+        direction = intent.target or ("down" if amount < 0 else "up")
         if self.dry_run:
-            direction = "down" if amount < 0 else "up"
             return ActionResult(True, f"Would scroll {direction}.")
 
         try:
             import pyautogui
 
-            pyautogui.scroll(amount)
+            key = "pagedown" if direction == "down" else "pageup"
+            pyautogui.press(key)
         except Exception as exc:
             return ActionResult(False, f"Scroll failed: {exc}")
-        return ActionResult(True, "Scrolled.")
+        return ActionResult(True, f"Scrolled {direction}.")
 
     def click(self, intent: Intent) -> ActionResult:
         button = intent.target or "left"

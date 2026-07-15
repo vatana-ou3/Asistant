@@ -72,3 +72,14 @@ def test_detect_take_screenshot_opens_snipping_tool() -> None:
     intent = detector().detect("Take a screenshot")
     assert intent.action == "open_application"
     assert intent.target == "snipping tool"
+
+
+def test_detect_natural_scrolling_variant() -> None:
+    intent = detector().detect("Scrolling down")
+    assert intent.action == "scroll"
+    assert intent.target == "down"
+
+
+def test_detect_maximize_and_restore_window() -> None:
+    assert detector().detect("full screen").action == "maximize_window"
+    assert detector().detect("small screen").action == "restore_window"

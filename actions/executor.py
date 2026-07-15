@@ -9,6 +9,7 @@ from actions.browser_actions import BrowserActions
 from actions.keyboard_actions import KeyboardActions
 from actions.mouse_actions import MouseActions
 from actions.system_actions import SystemActions
+from actions.window_actions import WindowActions
 
 
 class ActionExecutor:
@@ -21,6 +22,7 @@ class ActionExecutor:
         self.audio = AudioActions(dry_run=dry_run)
         self.brightness = BrightnessActions(dry_run=dry_run)
         self.system = SystemActions(dry_run=dry_run)
+        self.window = WindowActions(dry_run=dry_run)
 
     def execute(self, intent: Intent) -> ActionResult:
         dispatch = {
@@ -38,6 +40,8 @@ class ActionExecutor:
             "set_brightness": self.brightness.set_brightness,
             "adjust_brightness": self.brightness.adjust_brightness,
             "lock_computer": self.system.lock_computer,
+            "maximize_window": self.window.maximize,
+            "restore_window": self.window.restore,
         }
         handler = dispatch.get(intent.action)
         if handler is None:

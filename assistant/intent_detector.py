@@ -58,10 +58,10 @@ class IntentDetector:
         if app_match:
             return Intent(action="open_application", target=app_match.group("target"), raw_text=raw_text)
 
-        if command in {"scroll down", "go down"}:
-            return Intent(action="scroll", target="down", parameters={"amount": -600}, raw_text=raw_text)
-        if command in {"scroll up", "go up"}:
-            return Intent(action="scroll", target="up", parameters={"amount": 600}, raw_text=raw_text)
+        if command in {"scroll down", "scrolling down", "go down", "page down"}:
+            return Intent(action="scroll", target="down", parameters={"amount": -1}, raw_text=raw_text)
+        if command in {"scroll up", "scrolling up", "go up", "page up"}:
+            return Intent(action="scroll", target="up", parameters={"amount": 1}, raw_text=raw_text)
         if command in {"click", "left click"}:
             return Intent(action="mouse_click", target="left", raw_text=raw_text)
         if command in {"double click", "double-click"}:
@@ -73,6 +73,11 @@ class IntentDetector:
             return Intent(action="press_key", target="enter", raw_text=raw_text)
         if command in {"press escape", "escape", "esc"}:
             return Intent(action="press_key", target="esc", raw_text=raw_text)
+
+        if command in {"fullscreen", "full screen", "maximize", "maximize window", "maximize the window"}:
+            return Intent(action="maximize_window", raw_text=raw_text)
+        if command in {"smallscreen", "small screen", "restore", "restore window", "restore the window"}:
+            return Intent(action="restore_window", raw_text=raw_text)
 
         if command in {"mute", "mute audio", "mute volume"}:
             return Intent(action="mute_volume", raw_text=raw_text)

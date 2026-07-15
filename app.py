@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+import threading
 import time
 from pathlib import Path
 
@@ -18,6 +19,7 @@ from audio.transcriber import Transcriber
 from audio.wake_word import WakeWordDetector
 from config.config import load_config
 from interface.cli import AssistantCLI
+from interface.tray import TrayController
 from utils.logger import configure_logging, get_logger
 
 
@@ -213,13 +215,20 @@ def capture_voice_command(
     speech_detector: SpeechDetector,
     transcriber: Transcriber,
     record_seconds: float,
+    listening_enabled: threading.Event | None = None,
 ) -> tuple[str | None, str | None]:
     if record_seconds <= 0:
         return None, "Recording duration must be greater than zero."
 
     try:
         print(f"Listening (stops when you finish, max {record_seconds:g} seconds)...")
-        recording = recorder.record_command(record_seconds)
+        if listening_enabled is None:
+            recording = recorder.record_command(record_seconds)
+        else:
+            recording = recorder.record_command(
+                record_seconds,
+                cancellation_event=listening_enabled,
+            )
         input_level = speech_detector.input_level(recording)
         if not speech_detector.contains_speech(recording):
             return None, f"I did not hear any speech (microphone level: {input_level:.6f})."
@@ -401,6 +410,13 @@ def wake_word_loop(
         print(f"Conversation unavailable: {exc}")
         conversation = None
 
+    tray: TrayController | None = TrayController(config.settings.assistant_name)
+    try:
+        tray.start()
+    except RuntimeError as exc:
+        print(f"Tray controls unavailable: {exc}")
+        tray = None
+
     ready_file.parent.mkdir(parents=True, exist_ok=True)
     ready_file.write_text(str(config.settings.assistant_name), encoding="utf-8")
     ready_message = f"I'm ready. Say {config.settings.wake_word} when you need me."
@@ -412,19 +428,29 @@ def wake_word_loop(
     try:
         while True:
             print(f"Standby: say '{config.settings.wake_word}'.")
-            wake_detector.listen()
+            wake_detector.listen(tray.listening_enabled if tray is not None else None)
             _play_cue(880)
             print("Activated. Speak after the tone.")
             active_until = time.monotonic() + config.settings.follow_up_seconds
             scrolling_active = False
 
             while time.monotonic() < active_until:
+                if tray is not None and not tray.listening_enabled.is_set():
+                    if scrolling_active:
+                        handle_command("stop scrolling", dry_run=dry_run)
+                    break
+
                 command_text, error = capture_voice_command(
                     recorder,
                     speech_detector,
                     transcriber,
                     record_seconds,
+                    tray.listening_enabled if tray is not None else None,
                 )
+                if tray is not None and not tray.listening_enabled.is_set():
+                    if scrolling_active:
+                        handle_command("stop scrolling", dry_run=dry_run)
+                    break
                 if error:
                     if error.startswith("I did not hear any speech"):
                         continue
@@ -475,6 +501,8 @@ def wake_word_loop(
         print()
         return 0
     finally:
+        if tray is not None:
+            tray.stop()
         ready_file.unlink(missing_ok=True)
 
 

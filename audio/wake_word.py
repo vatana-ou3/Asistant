@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import threading
 from pathlib import Path
 
 
@@ -25,7 +26,7 @@ class WakeWordDetector:
         SetLogLevel(-1)
         self._model = Model(str(self.model_path))
 
-    def listen(self) -> bool:
+    def listen(self, listening_enabled: threading.Event | None = None) -> bool:
         self.prepare()
         try:
             import sounddevice as sd
@@ -34,23 +35,27 @@ class WakeWordDetector:
             raise RuntimeError("Wake-word mode needs Vosk and sounddevice.") from exc
 
         phrases = [self.wake_phrase, "[unk]"]
-        recognizer = KaldiRecognizer(self._model, self.sample_rate, json.dumps(phrases))
         block_frames = 4000
 
-        with sd.RawInputStream(
-            samplerate=self.sample_rate,
-            blocksize=block_frames,
-            dtype="int16",
-            channels=1,
-        ) as stream:
-            while True:
-                audio, _overflowed = stream.read(block_frames)
-                if recognizer.AcceptWaveform(bytes(audio)):
-                    text = json.loads(recognizer.Result()).get("text", "")
-                else:
-                    text = json.loads(recognizer.PartialResult()).get("partial", "")
-                if self.matches_wake_phrase(text):
-                    return True
+        while True:
+            if listening_enabled is not None:
+                listening_enabled.wait()
+
+            recognizer = KaldiRecognizer(self._model, self.sample_rate, json.dumps(phrases))
+            with sd.RawInputStream(
+                samplerate=self.sample_rate,
+                blocksize=block_frames,
+                dtype="int16",
+                channels=1,
+            ) as stream:
+                while listening_enabled is None or listening_enabled.is_set():
+                    audio, _overflowed = stream.read(block_frames)
+                    if recognizer.AcceptWaveform(bytes(audio)):
+                        text = json.loads(recognizer.Result()).get("text", "")
+                    else:
+                        text = json.loads(recognizer.PartialResult()).get("partial", "")
+                    if self.matches_wake_phrase(text):
+                        return True
 
     def matches_wake_phrase(self, text: str) -> bool:
         normalized = self._normalize(text)

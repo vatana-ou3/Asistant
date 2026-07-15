@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+import threading
 from dataclasses import dataclass
 
 
@@ -22,6 +23,7 @@ class AudioRecorder:
         silence_seconds: float = 0.5,
         block_seconds: float = 0.05,
         start_timeout_seconds: float = 2.0,
+        cancellation_event: threading.Event | None = None,
     ) -> AudioRecording:
         try:
             import sounddevice as sd
@@ -52,6 +54,8 @@ class AudioRecorder:
             blocksize=block_frames,
         ) as stream:
             for _ in range(max_blocks):
+                if cancellation_event is not None and not cancellation_event.is_set():
+                    break
                 block, _overflowed = stream.read(block_frames)
                 block = block.copy()
                 blocks.append(block)
@@ -80,5 +84,9 @@ class AudioRecorder:
                 else:
                     silent_blocks = 0
 
-        samples = np.concatenate(blocks, axis=0)
+        samples = (
+            np.concatenate(blocks, axis=0)
+            if blocks
+            else np.empty((0, self.channels), dtype=np.float32)
+        )
         return AudioRecording(samples=samples, sample_rate=self.sample_rate, speech_detected=speech_started)

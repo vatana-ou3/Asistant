@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+import threading
 from types import SimpleNamespace
 
 import numpy as np
@@ -87,6 +88,36 @@ def test_recorder_stops_after_post_speech_silence(monkeypatch) -> None:
     assert reads == 17
     assert len(recording.samples) == reads * block_frames
     assert recording.speech_detected
+
+
+def test_recorder_stops_when_listening_is_paused(monkeypatch) -> None:
+    reads = 0
+    listening_enabled = threading.Event()
+    listening_enabled.set()
+
+    class FakeStream:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, traceback):
+            return False
+
+        def read(self, frames):
+            nonlocal reads
+            reads += 1
+            listening_enabled.clear()
+            return np.zeros((frames, 1), dtype=np.float32), False
+
+    fake_sounddevice = SimpleNamespace(InputStream=lambda **kwargs: FakeStream())
+    monkeypatch.setitem(sys.modules, "sounddevice", fake_sounddevice)
+
+    recording = AudioRecorder().record_command(
+        duration_seconds=10,
+        cancellation_event=listening_enabled,
+    )
+
+    assert reads == 1
+    assert not recording.speech_detected
 
 
 def test_transcriber_forces_english_and_uses_command_prompt() -> None:

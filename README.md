@@ -108,6 +108,8 @@ Follow-up mode remains active for 30 seconds after each completed request.
 - **"Exit Ah Mark"** closes the background assistant.
 - **"Stop"** ends continuous scrolling.
 
+Ah Mark also adds a small icon to the Windows system tray near the clock. Right-click it and choose **Pause Listening** to release the microphone, or **Resume Listening** to wait for "Hey bro" again.
+
 ## Typed CLI
 
 Start the styled interactive CLI:
@@ -184,5 +186,5 @@ Run the test suite:
 - Conversation history lasts for the current process and is not persisted yet
 - Wake-word mode must be started manually unless the user configures Windows startup
 - Desktop actions use deterministic rules rather than LLM-generated structured actions
-- There is no tray interface yet
+- Tray controls currently provide pause and resume only
 - YouTube video-specific controls such as play, pause, seek, and video fullscreen are not implemented

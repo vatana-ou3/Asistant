@@ -28,3 +28,9 @@ def test_dangerous_action_does_not_route_to_conversation() -> None:
 
     assert "disabled" in result
     assert conversation.prompts == []
+
+
+def test_desktop_command_is_identified_for_follow_up_prompt() -> None:
+    assert app.is_desktop_command("open chrome")
+    assert app.is_desktop_command("team")
+    assert not app.is_desktop_command("how are you")

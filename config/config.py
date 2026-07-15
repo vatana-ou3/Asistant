@@ -19,6 +19,8 @@ class Settings:
     speech_rate: int = 185
     ollama_model: str = "frob/qwen3.5-instruct:4b"
     ollama_url: str = "http://127.0.0.1:11434"
+    wake_word_model: Path = PROJECT_ROOT / "models" / "vosk-model-small-en-us-0.15"
+    follow_up_seconds: int = 30
 
 
 @dataclass(frozen=True)
@@ -41,14 +43,19 @@ def load_config() -> AppConfig:
     commands = _read_json(PROJECT_ROOT / "config" / "commands.json")
 
     log_file = PROJECT_ROOT / settings_data.get("log_file", "logs/assistant.log")
+    wake_word_model = PROJECT_ROOT / settings_data.get(
+        "wake_word_model", "models/vosk-model-small-en-us-0.15"
+    )
     settings = Settings(
         assistant_name=settings_data.get("assistant_name", "Ah Mark"),
-        wake_word=settings_data.get("wake_word", "hey ah mark"),
+        wake_word=settings_data.get("wake_word", "hey bro"),
         log_file=log_file,
         default_browser=settings_data.get("default_browser"),
         speech_enabled=bool(settings_data.get("speech_enabled", False)),
         speech_rate=int(settings_data.get("speech_rate", 185)),
         ollama_model=settings_data.get("ollama_model", "frob/qwen3.5-instruct:4b"),
         ollama_url=settings_data.get("ollama_url", "http://127.0.0.1:11434"),
+        wake_word_model=wake_word_model,
+        follow_up_seconds=int(settings_data.get("follow_up_seconds", 30)),
     )
     return AppConfig(settings=settings, applications=applications, commands=commands)

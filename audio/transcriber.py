@@ -34,7 +34,10 @@ class Transcriber:
                 without_timestamps=True,
                 max_new_tokens=64,
                 hallucination_silence_threshold=1.0,
-                hotwords="Chrome YouTube Google volume brightness copy paste Ah Mark",
+                hotwords=(
+                    "Open Chrome YouTube Telegram Microsoft Teams Explorer folder VS Code Google "
+                    "volume brightness copy paste Ah Mark"
+                ),
             )
             return " ".join(segment.text.strip() for segment in segments).strip()
         finally:

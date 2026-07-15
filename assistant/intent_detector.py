@@ -35,6 +35,18 @@ class IntentDetector:
             if re.search(rf"\b(open|go to|launch|start)\s+{re.escape(site_name)}\b", command):
                 return Intent(action="open_website", target=site_name, parameters={"url": url}, raw_text=raw_text)
 
+        if command in websites:
+            return Intent(
+                action="open_website",
+                target=command,
+                parameters={"url": websites[command]},
+                raw_text=raw_text,
+            )
+
+        applications = self.command_config.get("applications", {})
+        if command in applications:
+            return Intent(action="open_application", target=command, raw_text=raw_text)
+
         app_match = re.match(r"^(open|launch|start|run)\s+(?P<target>.+)$", command)
         if app_match:
             return Intent(action="open_application", target=app_match.group("target"), raw_text=raw_text)

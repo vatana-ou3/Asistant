@@ -1,6 +1,8 @@
 {
   "assistant_name": "Ah Mark",
-  "wake_word": "hey ah mark",
+  "wake_word": "hey bro",
+  "wake_word_model": "models/vosk-model-small-en-us-0.15",
+  "follow_up_seconds": 30,
   "default_browser": null,
   "speech_enabled": true,
   "speech_rate": 185,

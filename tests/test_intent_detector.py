@@ -5,6 +5,7 @@ def detector() -> IntentDetector:
     return IntentDetector(
         {
             "websites": {"youtube": "https://www.youtube.com"},
+            "applications": {"team": "ms-teams", "folder": "explorer", "vs code": "code"},
             "keyboard_shortcuts": {"copy": ["ctrl", "c"], "next tab": ["ctrl", "tab"]},
         }
     )
@@ -47,3 +48,15 @@ def test_detect_keyboard_shortcut() -> None:
     intent = detector().detect("next tab")
     assert intent.action == "keyboard_shortcut"
     assert intent.parameters["keys"] == ["ctrl", "tab"]
+
+
+def test_detect_bare_application_alias() -> None:
+    intent = detector().detect("team")
+    assert intent.action == "open_application"
+    assert intent.target == "team"
+
+
+def test_detect_bare_website_name() -> None:
+    intent = detector().detect("YouTube")
+    assert intent.action == "open_website"
+    assert intent.target == "youtube"

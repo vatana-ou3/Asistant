@@ -42,6 +42,28 @@ Press Enter, speak during the recording window, and wait for Ah Mark to run the 
 
 Voice-mode responses are spoken through Windows text-to-speech and remain visible in the terminal. Use `--no-speech` to keep responses silent.
 
+Use hands-free wake-word mode:
+
+```powershell
+.\.venv\Scripts\python app.py --wake-word
+```
+
+Say "Hey bro" and wait for the activation tone before speaking. After completing a desktop task, Ah Mark says "Already done. What do you want next?" and plays a follow-up tone. Speak the next request immediately without repeating the wake phrase. Follow-up mode remains active for 30 seconds. Say "bye" to return to wake-word standby immediately. Say "exit Ah Mark" to stop the background assistant.
+
+The `load-ahmark` command starts wake-word mode in a minimized window, waits for all local models to load, and reports when Ah Mark is ready. Ah Mark also announces readiness through text-to-speech.
+
+Stop the background listener from any CMD window with `stop-ahmark`.
+
+Typed commands work at the same time as the background voice listener:
+
+```cmd
+ahmark open chrome
+ahmark search youtube for Python tutorials
+ahmark what is Python
+```
+
+Run `ahmark` without additional text to open the interactive typed conversation.
+
 Ah Mark sends conversational requests that are not recognized desktop commands to the local Ollama model configured in `config/settings.json`. Conversation history is retained for the current session, while desktop actions continue to use the rule-based validator.
 
 Faster-Whisper downloads the selected model the first time it is used. Once the model is cached, transcription runs locally without an internet connection.
@@ -56,6 +78,7 @@ Faster-Whisper downloads the selected model the first time it is used. Once the 
 - Push-to-talk voice commands using local Faster-Whisper transcription.
 - Local conversation through Ollama using `frob/qwen3.5-instruct:4b`.
 - Spoken voice-mode responses using Windows text-to-speech.
+- Offline Vosk wake-word detection with a 30-second follow-up conversation window.
 - Safety validation for dangerous or invalid actions.
 - Logging to `logs/assistant.log`.
 

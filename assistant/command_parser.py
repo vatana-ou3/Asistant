@@ -8,6 +8,8 @@ FILLER_PREFIXES = (
     "can you ",
     "could you ",
     "would you ",
+    "bro ",
+    "hey bro ",
     "ah mark ",
     "hey ah mark ",
     "nova ",

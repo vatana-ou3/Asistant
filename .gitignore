@@ -5,3 +5,5 @@ __pycache__/
 logs/*.log
 database/*.db
 .pytest_cache/
+models/
+runtime/

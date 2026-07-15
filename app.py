@@ -17,6 +17,7 @@ from audio.speech_detector import SpeechDetector
 from audio.transcriber import Transcriber
 from audio.wake_word import WakeWordDetector
 from config.config import load_config
+from interface.cli import AssistantCLI
 from utils.logger import configure_logging, get_logger
 
 
@@ -65,6 +66,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--no-speech",
         action="store_true",
         help="Disable spoken responses in voice mode.",
+    )
+    parser.add_argument(
+        "--plain",
+        action="store_true",
+        help="Use plain text output instead of the styled CLI.",
     )
     return parser
 
@@ -142,28 +148,44 @@ def is_desktop_command(command_text: str) -> bool:
     return CommandValidator().validate(intent).is_valid
 
 
-def interactive_loop(dry_run: bool = False) -> int:
+def interactive_loop(dry_run: bool = False, plain: bool = False) -> int:
     conversation = create_conversation()
-    assistant_name = load_config().settings.assistant_name
-    print(f"{assistant_name} desktop assistant MVP")
-    try:
-        conversation.prepare()
-    except RuntimeError as exc:
-        print(f"Conversation unavailable: {exc}")
-        conversation = None
-    print("Type a command or message, or 'quit' to exit.")
-    while True:
-        try:
-            command_text = input("> ").strip()
-        except (EOFError, KeyboardInterrupt):
-            print()
-            return 0
+    config = load_config()
 
-        if command_text.lower() in {"quit", "exit"}:
-            return 0
-        if not command_text:
-            continue
-        print(handle_command(command_text, dry_run=dry_run, conversation=conversation))
+    if plain:
+        print(f"{config.settings.assistant_name} desktop assistant")
+        try:
+            conversation.prepare()
+        except RuntimeError as exc:
+            print(f"Conversation unavailable: {exc}")
+            conversation = None
+        print("Type a command or message, or 'quit' to exit.")
+        while True:
+            try:
+                command_text = input("> ").strip()
+            except (EOFError, KeyboardInterrupt):
+                print()
+                return 0
+
+            if command_text.lower() in {"quit", "exit"}:
+                return 0
+            if not command_text:
+                continue
+            print(handle_command(command_text, dry_run=dry_run, conversation=conversation))
+
+    cli = AssistantCLI(config.settings.assistant_name, config.settings.ollama_model)
+    cli.show_header()
+    try:
+        with cli.loading_status("Loading local model..."):
+            conversation.prepare()
+    except RuntimeError as exc:
+        cli.console.print(f"[yellow]Conversation unavailable:[/yellow] {exc}")
+        conversation = None
+
+    return cli.interactive(
+        lambda command: handle_command(command, dry_run=dry_run, conversation=conversation),
+        is_desktop_command,
+    )
 
 
 def process_voice_command(
@@ -438,7 +460,19 @@ def wake_word_loop(
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     if args.command:
-        print(handle_command(args.command, dry_run=args.dry_run, conversation=create_conversation()))
+        conversation = create_conversation()
+        if args.plain:
+            print(handle_command(args.command, dry_run=args.dry_run, conversation=conversation))
+            return 0
+
+        config = load_config()
+        cli = AssistantCLI(config.settings.assistant_name, config.settings.ollama_model)
+        cli.show_header()
+        cli.run_command(
+            args.command,
+            lambda command: handle_command(command, dry_run=args.dry_run, conversation=conversation),
+            is_desktop_command,
+        )
         return 0
     if args.voice_once:
         print(
@@ -464,7 +498,7 @@ def main(argv: list[str] | None = None) -> int:
             dry_run=args.dry_run,
             speech_disabled=args.no_speech,
         )
-    return interactive_loop(dry_run=args.dry_run)
+    return interactive_loop(dry_run=args.dry_run, plain=args.plain)
 
 
 if __name__ == "__main__":

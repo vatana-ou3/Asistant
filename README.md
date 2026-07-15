@@ -64,6 +64,8 @@ ahmark what is Python
 
 Run `ahmark` without additional text to open the interactive typed conversation.
 
+The typed interface includes a styled local-assistant header, clear conversation turns, loading indicators, automatic terminal wrapping, and Markdown/code rendering. Use `python app.py --plain` when unstyled output is preferable for scripting.
+
 Ah Mark sends conversational requests that are not recognized desktop commands to the local Ollama model configured in `config/settings.json`. Conversation history is retained for the current session, while desktop actions continue to use the rule-based validator.
 
 Faster-Whisper downloads the selected model the first time it is used. Once the model is cached, transcription runs locally without an internet connection.

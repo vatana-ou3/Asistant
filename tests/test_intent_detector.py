@@ -5,7 +5,13 @@ def detector() -> IntentDetector:
     return IntentDetector(
         {
             "websites": {"youtube": "https://www.youtube.com"},
-            "applications": {"team": "ms-teams", "folder": "explorer", "vs code": "code"},
+            "applications": {
+                "team": "ms-teams",
+                "folder": "explorer",
+                "vs code": "code",
+                "screenshot": "snippingtool",
+                "snipping tool": "snippingtool",
+            },
             "keyboard_shortcuts": {"copy": ["ctrl", "c"], "next tab": ["ctrl", "tab"]},
         }
     )
@@ -60,3 +66,9 @@ def test_detect_bare_website_name() -> None:
     intent = detector().detect("YouTube")
     assert intent.action == "open_website"
     assert intent.target == "youtube"
+
+
+def test_detect_take_screenshot_opens_snipping_tool() -> None:
+    intent = detector().detect("Take a screenshot")
+    assert intent.action == "open_application"
+    assert intent.target == "snipping tool"

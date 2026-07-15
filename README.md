@@ -62,6 +62,8 @@ ahmark search youtube for Python tutorials
 ahmark what is Python
 ```
 
+Say or type `screenshot`, `take a screenshot`, or `open snipping tool` to launch Windows Snipping Tool and select the capture area manually.
+
 Run `ahmark` without additional text to open the interactive typed conversation.
 
 The typed interface includes a styled local-assistant header, clear conversation turns, loading indicators, automatic terminal wrapping, and Markdown/code rendering. Use `python app.py --plain` when unstyled output is preferable for scripting.

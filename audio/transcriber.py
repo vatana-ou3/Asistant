@@ -35,7 +35,7 @@ class Transcriber:
                 max_new_tokens=64,
                 hallucination_silence_threshold=1.0,
                 hotwords=(
-                    "Open Chrome YouTube Telegram Microsoft Teams Explorer folder VS Code Google "
+                    "Open Chrome YouTube Telegram Microsoft Teams Explorer folder VS Code Google screenshot Snipping Tool "
                     "volume brightness copy paste Ah Mark"
                 ),
             )

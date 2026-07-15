@@ -20,6 +20,11 @@
   "folders": "explorer",
   "files": "explorer",
   "file manager": "explorer",
+  "screenshot": "snippingtool",
+  "screen shot": "snippingtool",
+  "snip": "snippingtool",
+  "snipping tool": "snippingtool",
+  "screen capture": "snippingtool",
   "spotify": "spotify",
   "command prompt": "cmd",
   "powershell": "powershell"

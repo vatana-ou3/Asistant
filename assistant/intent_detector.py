@@ -47,6 +47,13 @@ class IntentDetector:
         if command in applications:
             return Intent(action="open_application", target=command, raw_text=raw_text)
 
+        screenshot_match = re.match(
+            r"^(take|make|start)\s+(a\s+)?(screenshot|screen shot|snip|screen capture)$",
+            command,
+        )
+        if screenshot_match:
+            return Intent(action="open_application", target="snipping tool", raw_text=raw_text)
+
         app_match = re.match(r"^(open|launch|start|run)\s+(?P<target>.+)$", command)
         if app_match:
             return Intent(action="open_application", target=app_match.group("target"), raw_text=raw_text)

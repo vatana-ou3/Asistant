@@ -8,6 +8,8 @@ class SpeechDetector:
         self.minimum_rms = minimum_rms
 
     def contains_speech(self, audio: AudioRecording) -> bool:
+        if audio.speech_detected is not None:
+            return audio.speech_detected
         return self.input_level(audio) >= self.minimum_rms
 
     def input_level(self, audio: AudioRecording) -> float:

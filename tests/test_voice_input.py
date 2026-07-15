@@ -34,7 +34,11 @@ def test_process_voice_command_transcribes_and_handles_command(monkeypatch) -> N
             assert audio is recording
             return "open chrome"
 
-    monkeypatch.setattr(app, "handle_command", lambda command, dry_run: f"handled {command} {dry_run}")
+    monkeypatch.setattr(
+        app,
+        "handle_command",
+        lambda command, dry_run, conversation=None: f"handled {command} {dry_run}",
+    )
 
     result = app.process_voice_command(Recorder(), SpeechDetector(), Transcriber(), 3, dry_run=True)
     assert result == "handled open chrome True"
@@ -57,8 +61,9 @@ def test_process_voice_command_does_not_transcribe_silence() -> None:
 
 def test_recorder_stops_after_post_speech_silence(monkeypatch) -> None:
     block_frames = 800
-    blocks = [np.full((block_frames, 1), 0.05, dtype=np.float32) for _ in range(4)]
-    blocks.extend(np.zeros((block_frames, 1), dtype=np.float32) for _ in range(15))
+    blocks = [np.zeros((block_frames, 1), dtype=np.float32) for _ in range(3)]
+    blocks.extend(np.full((block_frames, 1), 0.05, dtype=np.float32) for _ in range(4))
+    blocks.extend(np.zeros((block_frames, 1), dtype=np.float32) for _ in range(10))
     reads = 0
 
     class FakeStream:
@@ -79,8 +84,9 @@ def test_recorder_stops_after_post_speech_silence(monkeypatch) -> None:
 
     recording = AudioRecorder().record_command(duration_seconds=5)
 
-    assert reads == 19
+    assert reads == 17
     assert len(recording.samples) == reads * block_frames
+    assert recording.speech_detected
 
 
 def test_transcriber_forces_english_and_uses_command_prompt() -> None:
@@ -97,4 +103,5 @@ def test_transcriber_forces_english_and_uses_command_prompt() -> None:
 
     assert transcriber.transcribe(recording) == "Open YouTube"
     assert captured["language"] == "en"
-    assert "open YouTube" in captured["initial_prompt"]
+    assert "YouTube" in captured["hotwords"]
+    assert captured["max_new_tokens"] == 64

@@ -29,11 +29,12 @@ class Transcriber:
                 language="en",
                 beam_size=1,
                 vad_filter=True,
+                vad_parameters={"min_silence_duration_ms": 300},
                 condition_on_previous_text=False,
-                initial_prompt=(
-                    "Desktop assistant commands: open Chrome, open YouTube, search YouTube for, "
-                    "search Google for, set volume to 50 percent, increase brightness, copy, paste."
-                ),
+                without_timestamps=True,
+                max_new_tokens=64,
+                hallucination_silence_threshold=1.0,
+                hotwords="Chrome YouTube Google volume brightness copy paste Ah Mark",
             )
             return " ".join(segment.text.strip() for segment in segments).strip()
         finally:

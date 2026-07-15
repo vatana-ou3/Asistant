@@ -94,6 +94,27 @@ class IntentDetector:
         if youtube_match:
             return Intent(action="search_web", target="youtube", parameters={"query": youtube_match.group("query")}, raw_text=raw_text)
 
+        youtube_natural_match = re.search(
+            r"(?:open\s+)?youtube(?:\s+for\s+me)?(?:\s+and)?\s+search\s+(?:for\s+)?(?P<query>.+)$",
+            command,
+        )
+        if youtube_natural_match:
+            return Intent(
+                action="search_web",
+                target="youtube",
+                parameters={"query": youtube_natural_match.group("query")},
+                raw_text=raw_text,
+            )
+
+        youtube_suffix_match = re.search(r"search\s+(?:for\s+)?(?P<query>.+)\s+on\s+youtube$", command)
+        if youtube_suffix_match:
+            return Intent(
+                action="search_web",
+                target="youtube",
+                parameters={"query": youtube_suffix_match.group("query")},
+                raw_text=raw_text,
+            )
+
         google_match = re.search(r"search\s+(google\s+)?(for\s+)?(?P<query>.+)$", command)
         if google_match:
             return Intent(action="search_web", target="google", parameters={"query": google_match.group("query")}, raw_text=raw_text)

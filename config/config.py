@@ -16,6 +16,9 @@ class Settings:
     log_file: Path
     default_browser: str | None = None
     speech_enabled: bool = False
+    speech_rate: int = 185
+    ollama_model: str = "frob/qwen3.5-instruct:4b"
+    ollama_url: str = "http://127.0.0.1:11434"
 
 
 @dataclass(frozen=True)
@@ -39,10 +42,13 @@ def load_config() -> AppConfig:
 
     log_file = PROJECT_ROOT / settings_data.get("log_file", "logs/assistant.log")
     settings = Settings(
-        assistant_name=settings_data.get("assistant_name", "Nova"),
-        wake_word=settings_data.get("wake_word", "hey nova"),
+        assistant_name=settings_data.get("assistant_name", "Ah Mark"),
+        wake_word=settings_data.get("wake_word", "hey ah mark"),
         log_file=log_file,
         default_browser=settings_data.get("default_browser"),
         speech_enabled=bool(settings_data.get("speech_enabled", False)),
+        speech_rate=int(settings_data.get("speech_rate", 185)),
+        ollama_model=settings_data.get("ollama_model", "frob/qwen3.5-instruct:4b"),
+        ollama_url=settings_data.get("ollama_url", "http://127.0.0.1:11434"),
     )
     return AppConfig(settings=settings, applications=applications, commands=commands)

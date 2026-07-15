@@ -29,6 +29,20 @@ def test_detect_youtube_search() -> None:
     assert intent.parameters["query"] == "python tutorials"
 
 
+def test_detect_natural_youtube_search() -> None:
+    intent = detector().detect("Can you open YouTube for me and search for Python?")
+    assert intent.action == "search_web"
+    assert intent.target == "youtube"
+    assert intent.parameters["query"] == "python"
+
+
+def test_detect_youtube_search_with_site_at_end() -> None:
+    intent = detector().detect("Search for Python tutorials on YouTube")
+    assert intent.action == "search_web"
+    assert intent.target == "youtube"
+    assert intent.parameters["query"] == "python tutorials"
+
+
 def test_detect_keyboard_shortcut() -> None:
     intent = detector().detect("next tab")
     assert intent.action == "keyboard_shortcut"

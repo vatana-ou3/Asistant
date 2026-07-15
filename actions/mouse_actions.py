@@ -6,8 +6,9 @@ from assistant.models import ActionResult, Intent
 
 
 class ContinuousScroller:
-    def __init__(self, interval_seconds: float = 0.12) -> None:
+    def __init__(self, interval_seconds: float = 0.04, scroll_step: int = 11) -> None:
         self.interval_seconds = interval_seconds
+        self.scroll_step = scroll_step
         self._stop_event = threading.Event()
         self._thread: threading.Thread | None = None
         self._lock = threading.Lock()
@@ -37,7 +38,7 @@ class ContinuousScroller:
         return True
 
     def _run(self, direction: str, pyautogui_module, stop_event: threading.Event) -> None:
-        amount = -1 if direction == "down" else 1
+        amount = -self.scroll_step if direction == "down" else self.scroll_step
         while not stop_event.is_set():
             pyautogui_module.scroll(amount)
             stop_event.wait(self.interval_seconds)

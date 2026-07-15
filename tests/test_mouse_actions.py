@@ -21,7 +21,7 @@ def test_scroll_down_runs_until_stopped(monkeypatch) -> None:
     assert result.success
     assert stopped.success
     assert scrolled
-    assert all(amount == -1 for amount in scrolled)
+    assert all(amount == -11 for amount in scrolled)
 
 
 def test_scroll_up_runs_until_stopped(monkeypatch) -> None:
@@ -36,4 +36,4 @@ def test_scroll_up_runs_until_stopped(monkeypatch) -> None:
 
     assert result.success
     assert scrolled
-    assert all(amount == 1 for amount in scrolled)
+    assert all(amount == 11 for amount in scrolled)

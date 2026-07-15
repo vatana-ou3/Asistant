@@ -480,7 +480,7 @@ def wake_word_loop(
                 speak_response(speaker, response)
                 if command_action == "scroll":
                     scrolling_active = True
-                    follow_up_prompt = "Scrolling slowly. Say stop when you want me to stop."
+                    follow_up_prompt = "Scrolling. Say stop when you want me to stop."
                 elif command_action == "stop_scroll":
                     scrolling_active = False
                     follow_up_prompt = "Already done. What do you want next?"

@@ -1,93 +1,188 @@
-# Offline Voice-Controlled Desktop Assistant
+# Ah Mark
 
-Ah Mark is a Windows-focused desktop assistant prototype. This first version accepts typed commands, detects intents with rules, validates them for safety, and executes common desktop actions through optional local automation libraries.
+Ah Mark is a Windows desktop assistant that supports offline wake-word control, local speech recognition, spoken responses, desktop automation, and conversation through a local Ollama model.
 
-## Quick Start
+## Requirements
+
+- Windows 10 or Windows 11
+- Python 3.11 or newer
+- A working microphone
+- [Ollama for Windows](https://ollama.com/download/windows)
+- Approximately 5 GB of free space for Python packages and local models
+
+## Install
+
+Clone the repository and open PowerShell in the project directory:
+
+```powershell
+git clone <repository-url>
+cd voice_assistant
+```
+
+Create an isolated Python environment and install all Python dependencies:
 
 ```powershell
 python -m venv .venv
-.\.venv\Scripts\pip install -r requirements.txt
-.\.venv\Scripts\python app.py --dry-run
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
-Try commands such as:
-
-```text
-open chrome
-open youtube
-search google for FastAPI tutorials
-search youtube for Python tutorials
-copy
-paste
-scroll down
-next tab
-set volume to 50 percent
-increase brightness
-lock computer
-```
-
-Use `--dry-run` to test command parsing and validation without controlling the desktop:
+Install the configured conversation model:
 
 ```powershell
-.\.venv\Scripts\python app.py --command "set volume to 80 percent" --dry-run
+ollama pull frob/qwen3.5-instruct:4b
 ```
 
-Use push-to-talk voice mode:
+Another installed Ollama model can be selected through `ollama_model` in `config/settings.json`.
+
+Download and extract the offline Vosk English model:
 
 ```powershell
-.\.venv\Scripts\python app.py --voice
+New-Item -ItemType Directory -Path models -Force
+Invoke-WebRequest `
+  -Uri "https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip" `
+  -OutFile "$env:TEMP\vosk-model-small-en-us-0.15.zip"
+Expand-Archive `
+  -LiteralPath "$env:TEMP\vosk-model-small-en-us-0.15.zip" `
+  -DestinationPath models `
+  -Force
 ```
 
-Press Enter, speak during the recording window, and wait for Ah Mark to run the command. To record only one command, use `--voice-once`. Recording stops after you finish speaking, with a default maximum of ten seconds; change it with `--record-seconds 15`.
+Faster-Whisper downloads and caches `tiny.en` during its first voice-mode launch. Subsequent transcription runs locally.
 
-Voice-mode responses are spoken through Windows text-to-speech and remain visible in the terminal. Use `--no-speech` to keep responses silent.
+## First Run
 
-Use hands-free wake-word mode:
-
-```powershell
-.\.venv\Scripts\python app.py --wake-word
-```
-
-Say "Hey bro" and wait for the activation tone before speaking. After completing a desktop task, Ah Mark says "Already done. What do you want next?" and plays a follow-up tone. Speak the next request immediately without repeating the wake phrase. Follow-up mode remains active for 30 seconds. Say "bye" to return to wake-word standby immediately. Say "exit Ah Mark" to stop the background assistant.
-
-The `load-ahmark` command starts wake-word mode in a minimized window, waits for all local models to load, and reports when Ah Mark is ready. Ah Mark also announces readiness through text-to-speech.
-
-Stop the background listener from any CMD window with `stop-ahmark`.
-
-Typed commands work at the same time as the background voice listener:
+From the project directory, start hands-free voice mode with:
 
 ```cmd
-ahmark open chrome
-ahmark search youtube for Python tutorials
-ahmark what is Python
+load-ahmark.cmd
 ```
 
-Say or type `screenshot`, `take a screenshot`, or `open snipping tool` to launch Windows Snipping Tool and select the capture area manually.
+Wait until Ah Mark says:
 
-Say or type `full screen` or `maximize window` to maximize the active app. Use `small screen` or `restore window` to return it to a normal resizable window.
+```text
+I'm ready. Say hey bro when you need me.
+```
 
-In wake-word mode, `scroll down` and `scroll up` start slow continuous scrolling. Follow-up listening remains active until you say `stop` or `stop scrolling`.
+Then say **"Hey bro"**, wait for the activation tone, and speak your request.
 
-Run `ahmark` without additional text to open the interactive typed conversation.
+Stop the background listener with:
 
-The typed interface includes a styled local-assistant header, clear conversation turns, loading indicators, automatic terminal wrapping, and Markdown/code rendering. Use `python app.py --plain` when unstyled output is preferable for scripting.
+```cmd
+stop-ahmark.cmd
+```
 
-Ah Mark sends conversational requests that are not recognized desktop commands to the local Ollama model configured in `config/settings.json`. Conversation history is retained for the current session, while desktop actions continue to use the rule-based validator.
+## Global Commands
 
-Faster-Whisper downloads the selected model the first time it is used. Once the model is cached, transcription runs locally without an internet connection.
+Add the cloned project directory to your user `PATH` to use the commands from any new CMD window:
 
-## Current Scope
+```powershell
+$project = (Resolve-Path .).Path
+$userPath = [Environment]::GetEnvironmentVariable("Path", "User")
+if (($userPath -split ";") -notcontains $project) {
+    [Environment]::SetEnvironmentVariable("Path", "$userPath;$project", "User")
+}
+```
 
-- Rule-based command understanding.
-- Application and website launching.
-- Browser search URL creation.
-- Keyboard shortcuts, scrolling, click commands.
-- Volume and brightness actions, with media-key volume fallback when exact control is unavailable.
-- Push-to-talk voice commands using local Faster-Whisper transcription.
-- Local conversation through Ollama using `frob/qwen3.5-instruct:4b`.
-- Spoken voice-mode responses using Windows text-to-speech.
-- Offline Vosk wake-word detection with a 30-second follow-up conversation window.
-- Safety validation for dangerous or invalid actions.
-- Logging to `logs/assistant.log`.
+Open a new terminal after changing `PATH`. These commands will then be available globally:
 
-Wake word detection and local LLM intent detection are planned for later phases.
+```cmd
+load-ahmark
+ahmark
+ahmark open chrome
+ahmark what is Python?
+stop-ahmark
+```
+
+## Voice Workflow
+
+1. Say **"Hey bro"**.
+2. Wait for the activation tone.
+3. Speak for up to 10 seconds.
+4. Ah Mark performs the action or answers through Qwen.
+5. After a desktop action, it says **"Already done. What do you want next?"**
+6. Speak another request after the follow-up tone without repeating the wake phrase.
+
+Follow-up mode remains active for 30 seconds after each completed request.
+
+- **"Bye"** returns to wake-word standby.
+- **"Exit Ah Mark"** closes the background assistant.
+- **"Stop"** ends continuous scrolling.
+
+## Typed CLI
+
+Start the styled interactive CLI:
+
+```cmd
+ahmark
+```
+
+Run a single command or question:
+
+```cmd
+ahmark team
+ahmark search youtube for Python tutorials
+ahmark explain Python decorators
+```
+
+The CLI includes formatted conversation turns, loading indicators, terminal wrapping, Markdown, and highlighted code blocks.
+
+Plain output remains available for scripts:
+
+```powershell
+.\.venv\Scripts\python.exe app.py --command "open chrome" --plain
+```
+
+## Desktop Controls
+
+Ah Mark currently supports:
+
+- Opening Chrome, Edge, VS Code, Teams, Telegram, File Explorer, Spotify, Notepad, and Calculator
+- Opening YouTube, Google, GitHub, and Gmail
+- Searching Google and YouTube
+- Friendly names such as `team`, `folder`, `VS Code`, `YouTube`, and `Telegram`
+- Continuous `scroll down` and `scroll up` until `stop` is heard
+- Copy, paste, cut, undo, redo, save, refresh, and browser-tab shortcuts
+- Mouse clicks and screen scrolling
+- Volume, mute, and screen-brightness control
+- Maximizing the active window with `full screen` or `maximize window`
+- Restoring the active window with `small screen` or `restore window`
+- Opening Windows Snipping Tool with `screenshot`
+- Locking Windows
+
+Shutdown and restart requests remain blocked by the safety validator.
+
+## Configuration
+
+Edit `config/settings.json` to change:
+
+- Assistant name
+- Wake phrase
+- Follow-up duration
+- Ollama model and server URL
+- Speech output and speaking rate
+- Vosk model location
+
+Application aliases are stored in `config/applications.json`. Website and keyboard-shortcut aliases are stored in `config/commands.json`.
+
+## Development
+
+Run commands without controlling the desktop:
+
+```powershell
+.\.venv\Scripts\python.exe app.py --command "set volume to 50" --dry-run --plain
+```
+
+Run the test suite:
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest -q
+```
+
+## Current Limitations
+
+- Windows only
+- Conversation history lasts for the current process and is not persisted yet
+- Wake-word mode must be started manually unless the user configures Windows startup
+- Desktop actions use deterministic rules rather than LLM-generated structured actions
+- There is no tray interface yet
+- YouTube video-specific controls such as play, pause, seek, and video fullscreen are not implemented

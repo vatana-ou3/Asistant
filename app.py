@@ -475,6 +475,10 @@ def wake_word_loop(
                     break
 
                 command_action = detect_command_action(command_text)
+                if command_action is None:
+                    acknowledgement = "I heard you. Let me think."
+                    print(acknowledgement)
+                    speak_response(speaker, acknowledgement)
                 response = handle_command(command_text, dry_run=dry_run, conversation=conversation)
                 print(response)
                 speak_response(speaker, response)
